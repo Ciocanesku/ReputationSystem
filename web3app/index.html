@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Interaction</title>
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+    <h1>Blockchain Interaction</h1>
+
+    <!-- Wallet Section -->
+    <button id="connectWallet">Connect Wallet</button>
+    <p id="walletInfo">Wallet: Not connected</p>
+    <p id="walletBalance">Balance: 0 ETH</p>
+
+    <!-- Transfer Tokens -->
+    <h2>Transfer Tokens</h2>
+    <input type="text" id="recipient" placeholder="Recipient Address">
+    <input type="number" id="amount" placeholder="Amount">
+    <button id="sendTokens">Send Tokens</button>
+    <p id="transactionStatus">Transaction Status: N/A</p>
+    
+    <!-- Add Feedback -->
+    <h2>Add Feedback</h2>
+    <input type="text" id="feedbackUser" placeholder="User Address">
+    <input type="number" id="feedbackScore" placeholder="Score (1-5)">
+    <button id="addFeedback">Add Feedback</button>
+    <p id="feedbackStatus">Status: N/A</p>
+
+    <!-- Get Weighted Score -->
+    <h2>Check Weighted Score</h2>
+    <input type="text" id="userAddress" placeholder="User Address">
+    <button id="getScore">Get Score</button>
+    <p id="weightedScore">Weighted Score: N/A</p>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
