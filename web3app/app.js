@@ -12,7 +12,12 @@ const abiMyToken = [
 
 const abiReputationSystem = [
     "function getWeightedScore(address user) view returns (uint256)",
-    "function addFeedback(address user, uint score)"
+    "function addFeedback(address user, uint score)",
+    "function penalizeUser(address user, uint score)",
+    "function rewardUser(address user, uint amount)",
+    "function sendRewardWithEth(address user) payable"
+
+
 ];
 
 let provider, signer, myToken, reputationSystem;
@@ -107,3 +112,119 @@ document.getElementById("getScore").addEventListener("click", async () => {
         console.error("Error retrieving weighted score:", error);
     }
 });
+
+// Reward User with Tokens
+document.getElementById("rewardTokens").addEventListener("click", async () => {
+    const userAddress = document.getElementById("rewardUserAddress").value;
+    const amount = document.getElementById("rewardAmount").value;
+
+    try {
+        if (!reputationSystem) {
+            throw new Error("Contract ReputationSystem nu este conectat!");
+        }
+        if (!ethers.utils.isAddress(userAddress)) {
+            throw new Error("Invalid user address! Please enter a valid Ethereum address.");
+        }
+
+        const tx = await reputationSystem.rewardUser(userAddress, ethers.utils.parseUnits(amount, 18));
+        await tx.wait();
+        document.getElementById("rewardStatus").innerText = "Tokens rewarded successfully!";
+    } catch (error) {
+        document.getElementById("rewardStatus").innerText = `Error: ${error.message}`;
+        console.error("Error rewarding tokens:", error);
+    }
+});
+
+// Send ETH
+document.getElementById("sendEth").addEventListener("click", async () => {
+    const userAddress = document.getElementById("ethUserAddress").value;
+    const amount = document.getElementById("ethAmount").value;
+
+    try {
+        if (!reputationSystem) {
+            throw new Error("Contract ReputationSystem nu este conectat!");
+        }
+        if (!ethers.utils.isAddress(userAddress)) {
+            throw new Error("Invalid user address! Please enter a valid Ethereum address.");
+        }
+
+        const tx = await reputationSystem.sendRewardWithEth(userAddress, {
+            value: ethers.utils.parseEther(amount),
+        });
+        await tx.wait();
+        document.getElementById("ethStatus").innerText = "ETH sent successfully!";
+    } catch (error) {
+        document.getElementById("ethStatus").innerText = `Error: ${error.message}`;
+        console.error("Error sending ETH:", error);
+    }
+});
+
+// Penalize User
+document.getElementById("penalizeUser").addEventListener("click", async () => {
+    const userAddress = document.getElementById("penalizeUserAddress").value;
+    const penaltyScore = document.getElementById("penaltyScore").value;
+
+    try {
+        if (!reputationSystem) {
+            throw new Error("Contract ReputationSystem nu este conectat!");
+        }
+        if (!ethers.utils.isAddress(userAddress)) {
+            throw new Error("Invalid user address! Please enter a valid Ethereum address.");
+        }
+        if (penaltyScore < 1 || penaltyScore > 5) {
+            throw new Error("Penalty score must be between 1 and 5.");
+        }
+
+        const tx = await reputationSystem.penalizeUser(userAddress, penaltyScore);
+        await tx.wait();
+        document.getElementById("penaltyStatus").innerText = "User penalized successfully!";
+    } catch (error) {
+        document.getElementById("penaltyStatus").innerText = `Error: ${error.message}`;
+        console.error("Error penalizing user:", error);
+    }
+});
+
+// Verifică balanța MyToken pentru contul conectat
+async function updateConnectedUserBalance() {
+    try {
+        if (!signer || !myToken) {
+            throw new Error("Wallet sau contract MyToken nu este conectat!");
+        }
+
+        const walletAddress = await signer.getAddress();
+        const balance = await myToken.balanceOf(walletAddress);
+        document.getElementById("connectedTokenBalance").innerText = 
+            `MyToken Balance: ${ethers.utils.formatUnits(balance, 18)} MYT`;
+    } catch (error) {
+        document.getElementById("connectedTokenBalance").innerText = `Error: ${error.message}`;
+        console.error("Error retrieving connected user's MyToken balance:", error);
+    }
+}
+
+// Adaugă apelul la conectarea contului
+document.getElementById("connectWallet").addEventListener("click", async () => {
+    if (!window.ethereum) {
+        alert("MetaMask is not installed!");
+        return;
+    }
+
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    signer = provider.getSigner();
+
+    const walletAddress = await signer.getAddress();
+    document.getElementById("walletInfo").innerText = `Wallet: ${walletAddress}`;
+
+    const balance = await provider.getBalance(walletAddress);
+    document.getElementById("walletBalance").innerText = `Balance: ${ethers.utils.formatEther(balance)} ETH`;
+
+    // Inițializare contracte
+    myToken = new ethers.Contract(contractAddresses.MyToken, abiMyToken, signer);
+    reputationSystem = new ethers.Contract(contractAddresses.ReputationSystem, abiReputationSystem, signer);
+
+    console.log("Contracts connected:", { myToken, reputationSystem });
+
+    // Actualizează automat balanța MyToken
+    await updateConnectedUserBalance();
+});
+

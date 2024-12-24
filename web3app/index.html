@@ -13,6 +13,9 @@
     <button id="connectWallet">Connect Wallet</button>
     <p id="walletInfo">Wallet: Not connected</p>
     <p id="walletBalance">Balance: 0 ETH</p>
+    <p id="connectedTokenBalance">MyToken Balance: N/A</p>
+
+
 
     <!-- Transfer Tokens -->
     <h2>Transfer Tokens</h2>
@@ -33,6 +36,30 @@
     <input type="text" id="userAddress" placeholder="User Address">
     <button id="getScore">Get Score</button>
     <p id="weightedScore">Weighted Score: N/A</p>
+
+<!-- Reward User with Tokens -->
+<h2>Reward User with Tokens</h2>
+<input type="text" id="rewardUserAddress" placeholder="User Address">
+<input type="number" id="rewardAmount" placeholder="Amount">
+<button id="rewardTokens">Reward Tokens</button>
+<p id="rewardStatus">Reward Status: N/A</p>
+
+<!-- Send ETH -->
+<h2>Send ETH</h2>
+<input type="text" id="ethUserAddress" placeholder="User Address">
+<input type="number" id="ethAmount" placeholder="Amount (ETH)">
+<button id="sendEth">Send ETH</button>
+<p id="ethStatus">ETH Status: N/A</p>
+
+<!-- Penalize User -->
+<h2>Penalize User</h2>
+<input type="text" id="penalizeUserAddress" placeholder="User Address">
+<input type="number" id="penaltyScore" placeholder="Penalty Score (1-5)">
+<button id="penalizeUser">Penalize User</button>
+<p id="penaltyStatus">Penalty Status: N/A</p>
+
+
+
 
     <script type="module" src="app.js"></script>
 </body>
