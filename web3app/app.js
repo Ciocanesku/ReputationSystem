@@ -1,8 +1,8 @@
 import { ethers } from "https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js";
 
 const contractAddresses = {
-    MyToken: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512", // Adresa MyToken
-    ReputationSystem: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0" // Adresa ReputationSystem
+    MyToken: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    ReputationSystem: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
 };
 
 const abiMyToken = [
@@ -15,14 +15,43 @@ const abiReputationSystem = [
     "function addFeedback(address user, uint score)",
     "function penalizeUser(address user, uint score)",
     "function rewardUser(address user, uint amount)",
-    "function sendRewardWithEth(address user) payable"
-
-
+    "function sendRewardWithEth(address user) payable",
+    "function owner() view returns (address)"
 ];
 
-let provider, signer, myToken, reputationSystem;
+let provider, signer, myToken, reputationSystem, isAdmin = false;
 
-// Conectare wallet
+async function checkAdminStatus() {
+    try {
+        const adminAddress = await reputationSystem.owner();
+        const walletAddress = await signer.getAddress();
+        isAdmin = adminAddress.toLowerCase() === walletAddress.toLowerCase();
+    } catch (error) {
+        isAdmin = false;
+    }
+}
+
+function toggleFunctionalityVisibility() {
+    const adminElements = document.querySelectorAll(".admin-only");
+    const functionalitiesSection = document.getElementById("functionalities-section");
+
+    adminElements.forEach(el => el.style.display = isAdmin ? "block" : "none");
+    functionalitiesSection.style.display = "block";
+    document.getElementById("connect-section").style.display = "none";
+    document.getElementById("logoutWallet").style.display = "block";
+}
+
+async function updateConnectedUserBalance() {
+    try {
+        const walletAddress = await signer.getAddress();
+        const balance = await myToken.balanceOf(walletAddress);
+        document.getElementById("connectedTokenBalance").innerText = 
+            `MyToken Balance: ${ethers.utils.formatUnits(balance, 18)} MYT`;
+    } catch (error) {
+        document.getElementById("connectedTokenBalance").innerText = "MyToken Balance: Error";
+    }
+}
+
 document.getElementById("connectWallet").addEventListener("click", async () => {
     if (!window.ethereum) {
         alert("MetaMask is not installed!");
@@ -34,17 +63,71 @@ document.getElementById("connectWallet").addEventListener("click", async () => {
     signer = provider.getSigner();
 
     const walletAddress = await signer.getAddress();
+    localStorage.setItem("connectedWallet", walletAddress); // Save to localStorage
     document.getElementById("walletInfo").innerText = `Wallet: ${walletAddress}`;
 
     const balance = await provider.getBalance(walletAddress);
     document.getElementById("walletBalance").innerText = `Balance: ${ethers.utils.formatEther(balance)} ETH`;
 
-    // Inițializare contracte
+    // Initialize contracts
     myToken = new ethers.Contract(contractAddresses.MyToken, abiMyToken, signer);
     reputationSystem = new ethers.Contract(contractAddresses.ReputationSystem, abiReputationSystem, signer);
 
     console.log("Contracts connected:", { myToken, reputationSystem });
+
+    // Update balance and visibility
+    await updateConnectedUserBalance();
+    await checkAdminStatus();
+    toggleFunctionalityVisibility();
 });
+
+window.addEventListener("load", async () => {
+    const savedWallet = localStorage.getItem("connectedWallet");
+    if (savedWallet) {
+        try {
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+            signer = provider.getSigner();
+
+            const walletAddress = await signer.getAddress();
+            if (walletAddress.toLowerCase() === savedWallet.toLowerCase()) {
+                document.getElementById("walletInfo").innerText = `Wallet: ${walletAddress}`;
+                const balance = await provider.getBalance(walletAddress);
+                document.getElementById("walletBalance").innerText = `Balance: ${ethers.utils.formatEther(balance)} ETH`;
+
+                // Initialize contracts
+                myToken = new ethers.Contract(contractAddresses.MyToken, abiMyToken, signer);
+                reputationSystem = new ethers.Contract(contractAddresses.ReputationSystem, abiReputationSystem, signer);
+
+                console.log("Contracts connected:", { myToken, reputationSystem });
+
+                // Update balance and visibility
+                await updateConnectedUserBalance();
+                await checkAdminStatus();
+                toggleFunctionalityVisibility();
+            } else {
+                localStorage.removeItem("connectedWallet"); // Remove if wallet mismatch
+            }
+        } catch (error) {
+            console.error("Error reconnecting:", error);
+            localStorage.removeItem("connectedWallet"); // Clear if an error occurs
+        }
+    }
+});
+
+
+document.getElementById("logoutWallet").addEventListener("click", () => {
+    localStorage.removeItem("connectedWallet");
+    document.getElementById("walletInfo").innerText = "Wallet: Not connected";
+    document.getElementById("walletBalance").innerText = "Balance: 0 ETH";
+    document.getElementById("connectedTokenBalance").innerText = "MyToken Balance: N/A";
+    document.getElementById("functionalities-section").style.display = "none";
+    document.getElementById("connect-section").style.display = "block";
+    isAdmin = false;
+});
+
+
+
+
 
 
 // Send Tokens
@@ -97,21 +180,33 @@ document.getElementById("getScore").addEventListener("click", async () => {
     const userAddress = document.getElementById("userAddress").value;
 
     try {
+        // Check if the user address is valid
         if (!ethers.utils.isAddress(userAddress)) {
             throw new Error("Invalid user address! Please enter a valid Ethereum address.");
         }
 
+        // Ensure the contract is connected
         if (!reputationSystem) {
-            throw new Error("Contract ReputationSystem nu este conectat!");
+            throw new Error("Contract ReputationSystem is not connected!");
         }
 
+        // Fetch the weighted score
         const score = await reputationSystem.getWeightedScore(userAddress);
+
+        // Display the score
         document.getElementById("weightedScore").innerText = `Weighted Score: ${score.toString()}`;
     } catch (error) {
-        document.getElementById("weightedScore").innerText = `Error: ${error.message}`;
+        // Handle case where no feedback is found
+        if (error.reason && error.reason.includes("No feedback found for this user")) {
+            document.getElementById("weightedScore").innerText = "Weighted Score: No feedback yet";
+        } else {
+            document.getElementById("weightedScore").innerText = `Error: ${error.message}`;
+        }
+
         console.error("Error retrieving weighted score:", error);
     }
 });
+
 
 // Reward User with Tokens
 document.getElementById("rewardTokens").addEventListener("click", async () => {
@@ -184,47 +279,6 @@ document.getElementById("penalizeUser").addEventListener("click", async () => {
     }
 });
 
-// Verifică balanța MyToken pentru contul conectat
-async function updateConnectedUserBalance() {
-    try {
-        if (!signer || !myToken) {
-            throw new Error("Wallet sau contract MyToken nu este conectat!");
-        }
 
-        const walletAddress = await signer.getAddress();
-        const balance = await myToken.balanceOf(walletAddress);
-        document.getElementById("connectedTokenBalance").innerText = 
-            `MyToken Balance: ${ethers.utils.formatUnits(balance, 18)} MYT`;
-    } catch (error) {
-        document.getElementById("connectedTokenBalance").innerText = `Error: ${error.message}`;
-        console.error("Error retrieving connected user's MyToken balance:", error);
-    }
-}
 
-// Adaugă apelul la conectarea contului
-document.getElementById("connectWallet").addEventListener("click", async () => {
-    if (!window.ethereum) {
-        alert("MetaMask is not installed!");
-        return;
-    }
-
-    provider = new ethers.providers.Web3Provider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
-    signer = provider.getSigner();
-
-    const walletAddress = await signer.getAddress();
-    document.getElementById("walletInfo").innerText = `Wallet: ${walletAddress}`;
-
-    const balance = await provider.getBalance(walletAddress);
-    document.getElementById("walletBalance").innerText = `Balance: ${ethers.utils.formatEther(balance)} ETH`;
-
-    // Inițializare contracte
-    myToken = new ethers.Contract(contractAddresses.MyToken, abiMyToken, signer);
-    reputationSystem = new ethers.Contract(contractAddresses.ReputationSystem, abiReputationSystem, signer);
-
-    console.log("Contracts connected:", { myToken, reputationSystem });
-
-    // Actualizează automat balanța MyToken
-    await updateConnectedUserBalance();
-});
 

@@ -7,59 +7,76 @@
     <link rel="stylesheet" href="styles/style.css">
 </head>
 <body>
-    <h1>Blockchain Interaction</h1>
+    <div class="navbar">
+        <h1>Blockchain Interaction</h1>
+        <div class="user-info">
+            <p id="walletInfo">Wallet: Not connected</p>
+            <p id="walletBalance">Balance: 0 ETH</p>
+            <p id="connectedTokenBalance">MyToken Balance: N/A</p>
+        </div>
+        <button id="logoutWallet" class="btn btn-logout" style="display: none;">Logout</button>
+    </div>
 
-    <!-- Wallet Section -->
-    <button id="connectWallet">Connect Wallet</button>
-    <p id="walletInfo">Wallet: Not connected</p>
-    <p id="walletBalance">Balance: 0 ETH</p>
-    <p id="connectedTokenBalance">MyToken Balance: N/A</p>
+    <div class="container">
+        <div id="connect-section" class="card">
+            <button id="connectWallet" class="btn btn-primary">Connect Wallet</button>
+        </div>
 
+        <div id="functionalities-section" class="container" style="display: none;">
+            <!-- User-only Functionalities -->
+            <div class="user-only card">
+                <h2>Transfer Tokens</h2>
+                <input type="text" id="recipient" placeholder="Recipient Address" class="input-field">
+                <input type="number" id="amount" placeholder="Amount" class="input-field">
+                <button id="sendTokens" class="btn btn-primary">Send Tokens</button>
+                <p id="transactionStatus">Transaction Status: N/A</p>
+            </div>
 
+            <div class="user-only card">
+                <h2>Add Feedback</h2>
+                <input type="text" id="feedbackUser" placeholder="User Address" class="input-field">
+                <input type="number" id="feedbackScore" placeholder="Score (1-5)" class="input-field">
+                <button id="addFeedback" class="btn btn-primary">Add Feedback</button>
+                <p id="feedbackStatus">Status: N/A</p>
+            </div>
 
-    <!-- Transfer Tokens -->
-    <h2>Transfer Tokens</h2>
-    <input type="text" id="recipient" placeholder="Recipient Address">
-    <input type="number" id="amount" placeholder="Amount">
-    <button id="sendTokens">Send Tokens</button>
-    <p id="transactionStatus">Transaction Status: N/A</p>
-    
-    <!-- Add Feedback -->
-    <h2>Add Feedback</h2>
-    <input type="text" id="feedbackUser" placeholder="User Address">
-    <input type="number" id="feedbackScore" placeholder="Score (1-5)">
-    <button id="addFeedback">Add Feedback</button>
-    <p id="feedbackStatus">Status: N/A</p>
+            <div class="user-only card">
+                <h2>Check Weighted Score</h2>
+                <input type="text" id="userAddress" placeholder="User Address" class="input-field">
+                <button id="getScore" class="btn btn-primary">Get Score</button>
+                <p id="weightedScore">Weighted Score: N/A</p>
+            </div>
 
-    <!-- Get Weighted Score -->
-    <h2>Check Weighted Score</h2>
-    <input type="text" id="userAddress" placeholder="User Address">
-    <button id="getScore">Get Score</button>
-    <p id="weightedScore">Weighted Score: N/A</p>
+            <!-- Admin-only Functionalities -->
+            <div class="admin-only card" style="display: none;">
+                <h2>Reward User with Tokens</h2>
+                <input type="text" id="rewardUserAddress" placeholder="User Address" class="input-field">
+                <input type="number" id="rewardAmount" placeholder="Amount" class="input-field">
+                <button id="rewardTokens" class="btn btn-primary">Reward Tokens</button>
+                <p id="rewardStatus">Reward Status: N/A</p>
+            </div>
 
-<!-- Reward User with Tokens -->
-<h2>Reward User with Tokens</h2>
-<input type="text" id="rewardUserAddress" placeholder="User Address">
-<input type="number" id="rewardAmount" placeholder="Amount">
-<button id="rewardTokens">Reward Tokens</button>
-<p id="rewardStatus">Reward Status: N/A</p>
+            <div class="admin-only card" style="display: none;">
+                <h2>Send ETH</h2>
+                <input type="text" id="ethUserAddress" placeholder="User Address" class="input-field">
+                <input type="number" id="ethAmount" placeholder="Amount (ETH)" class="input-field">
+                <button id="sendEth" class="btn btn-primary">Send ETH</button>
+                <p id="ethStatus">ETH Status: N/A</p>
+            </div>
 
-<!-- Send ETH -->
-<h2>Send ETH</h2>
-<input type="text" id="ethUserAddress" placeholder="User Address">
-<input type="number" id="ethAmount" placeholder="Amount (ETH)">
-<button id="sendEth">Send ETH</button>
-<p id="ethStatus">ETH Status: N/A</p>
+            <div class="admin-only card" style="display: none;">
+                <h2>Penalize User</h2>
+                <input type="text" id="penalizeUserAddress" placeholder="User Address" class="input-field">
+                <input type="number" id="penaltyScore" placeholder="Penalty Score (1-5)" class="input-field">
+                <button id="penalizeUser" class="btn btn-primary">Penalize User</button>
+                <p id="penaltyStatus">Penalty Status: N/A</p>
+            </div>
+        </div>
+    </div>
 
-<!-- Penalize User -->
-<h2>Penalize User</h2>
-<input type="text" id="penalizeUserAddress" placeholder="User Address">
-<input type="number" id="penaltyScore" placeholder="Penalty Score (1-5)">
-<button id="penalizeUser">Penalize User</button>
-<p id="penaltyStatus">Penalty Status: N/A</p>
-
-
-
+    <footer class="footer">
+        <p>© 2025 Blockchain Interaction. All rights reserved.</p>
+    </footer>
 
     <script type="module" src="app.js"></script>
 </body>
